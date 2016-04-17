@@ -52,7 +52,8 @@ VarNature = ones(d, 1); % integer variables
 VarBds = [zeros(d,1) data(1:d,3)]; % capacity of stations 
 FnGradAvail = 0; % No derivatives 
 NumConstraintGradAvail = 0; % No constraint gradients
-budget = [100; 1000; 5000];
+%budget = [100; 1000; 5000];
+budget = [5000];
 ObjBd=NaN;
 OptimalSol=NaN;
 
@@ -77,15 +78,31 @@ else
             
             %Distribute remaining bikes
             remain=bikes-sum(StartingSol(1,:));
-            for i=1:NumStartingSol
-                x=rand(remain,1);
-                for j=1:remain,
-                    y=cap.'-StartingSol(i,:);
-                    yProb=y./sum(y);
-                    cdf=cumsum(yProb);
-                    sAddTo=sum(cdf<=x(j))+1;
-                    StartingSol(i,sAddTo)=StartingSol(i,sAddTo)+1;
+            %for i=1:NumStartingSol
+            %    x=rand(remain,1);
+            %    for j=1:remain,
+            %        y=cap.'-StartingSol(i,:);
+            %        yProb=y./sum(y);
+            %        cdf=cumsum(yProb);
+            %        sAddTo=sum(cdf<=x(j))+1;
+            %        StartingSol(i,sAddTo)=StartingSol(i,sAddTo)+1;
+            %    end
+            
+            space = 0;
+            for i = 1:stations
+                space = space + cap(i,:)-StartingSol(:,i);
+            end
+            for i = 1: remain
+                loc = unidrnd(space);
+                a = 0;
+                numrack = 1;
+                while (a <= loc) & (numrack < 266)
+                    topSpaceRack = a + cap(numrack) - StartingSol(numrack);
+                    a = topSpaceRack;
+                    numrack = numrack + 1;       
                 end
+                StartingSol(numrack-1) = StartingSol(numrack-1) + 1;
+                space = space -1;
             end
             RandStream.setGlobalStream(OldStream); % Restore previous stream
         end  
